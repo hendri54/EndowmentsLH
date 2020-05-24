@@ -1,0 +1,20 @@
+name = "EndowmentsLH"
+uuid = "43a91d11-2366-4444-9ac6-7eb6ace4fe3c"
+authors = ["hendri54 <hendricksl@protonmail.com>"]
+version = "0.1.0"
+
+[deps]
+ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
+CommonLH = "96c8dc4a-d23f-53b2-b478-aad5d5ab80bd"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+
+[compat]
+julia = "^1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
