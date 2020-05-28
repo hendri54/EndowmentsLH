@@ -3,11 +3,14 @@
 
 Constructor for `EndowmentDraws`.
 """
-EndowmentDraws(meta :: Vector{Endowment{Any}}) =
-    EndowmentDraws(meta, DataFrame());
+EndowmentDraws() = EndowmentDraws(Vector{Endowment}(), DataFrame())
 
-EndowmentDraws(meta :: Vector{Endowment{T1}}) where T1 <: AbstractFloat =
-    EndowmentDraws(meta, DataFrame());
+# EndowmentDraws(meta :: Vector{Endowment{Any}}) =
+#     EndowmentDraws(meta, DataFrame());
+
+# EndowmentDraws(meta :: Vector{Endowment{T1}}) where T1 =
+#     EndowmentDraws(meta, DataFrame());
+
 
 
 """
@@ -57,6 +60,30 @@ type_endowments(e :: EndowmentDraws, j :: Integer) = e.draws[j,:];
 """
 	$(SIGNATURES)
 
+Create a copy of an `EndowmentDraws` object with only select cases.
+"""
+select_rows(e :: EndowmentDraws, idxV) = EndowmentDraws(e.meta, e.draws[idxV, :]);
+
+
+# """
+# 	$(SIGNATURES)
+
+# Select cases in place.
+# """
+# select_rows!(e :: EndowmentDraws, idxV) = (e.draws = e.draws[idxV, :]);
+
+
+"""
+	$(SIGNATURES)
+
+Retrieve label for one endowment.
+"""
+get_label(e :: EndowmentDraws, eName :: Symbol) = 
+    label(get_meta(e, eName));
+
+"""
+	$(SIGNATURES)
+
 Retrieve the meta information about one `Endowment`. Returns an `Endowment` object. Nothing if not found.
 """
 function get_meta(e :: EndowmentDraws, eName :: Symbol)
@@ -100,8 +127,38 @@ Add draws for one variable to existing `EndowDraws`.
 function add_draws!(e :: EndowmentDraws, endow :: Endowment{T1},
     dV :: AbstractVector{T1}) where T1
 
+    @assert !has_endowment(e, name(endow))
+    push!(e.meta, endow);
     setproperty!(e.draws, name(endow), dV);
 end
+
+
+"""
+	$(SIGNATURES)
+
+Replace values for one endowment. Type cannot change.
+`newVals` is a Vector. One element for each draw. Or it is a scalar.
+"""
+function replace_draws!(e :: EndowmentDraws, eName :: Symbol, newVals :: T1) where T1
+    oldType = eltype(getproperty(e.draws, eName));
+    if oldType == T1
+        # This is necessary in case each entry is a Vector
+        for j = 1 : length(e)
+            e.draws[j, eName] = newVals;
+        end
+    elseif eltype(newVals) == oldType
+        # Inputs is a vector. One draw for each old draw.
+        @assert length(newVals) == length(e)    
+        e.draws[!, eName] .= newVals;
+    else
+        error("""
+        Type mismatch for $eName:  
+        $(typeof(newVals))  vs  $(oldType)
+        """);
+    end
+end
+
+
 
 
 # -------  For testing
@@ -109,7 +166,7 @@ end
 function make_test_endowment_draws(n :: Integer)
     rng = MersenneTwister(43);
     ev = make_test_endowment_vector();
-    ed = EndowmentDraws(ev);
+    ed = EndowmentDraws();
     for endow in ev
         dV = draw_test_endowments(endow, n, rng);
         add_draws!(ed, endow, dV);
@@ -118,9 +175,5 @@ function make_test_endowment_draws(n :: Integer)
     return ed
 end
 
-function make_test_endowment_vector()
-    return [Endowment(:normal, NormalMarginal(2.0, 1.5)),
-        Endowment(:uniform, UniformMarginal(-1.5, 0.5))]
-end
 
 # -----------------
