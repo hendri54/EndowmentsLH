@@ -27,12 +27,25 @@ end
 """
 	$(SIGNATURES)
 
-Normal(mean, std) marginal.
+Normal(mean, std) marginal. Should store the Normal object +++
 """
 struct NormalMarginal{T1 <: AbstractFloat} <: AbstractMarginal{T1}
 	mean :: T1
 	std :: T1
 end
+
+
+"""
+	$(SIGNATURES)
+
+Beta marginal distribution. Characterized by lower bound, upper bound, and Beta parameters alpha and beta.
+"""
+struct BetaMarginal{T1} <: AbstractMarginal{T1}
+	lb :: T1
+	ub :: T1
+	betaDistr :: Distributions.Beta{T1}
+end
+
 
 """
 	$(SIGNATURES)

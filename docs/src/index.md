@@ -8,6 +8,7 @@ Each [`Endowment`](@ref) contains information about its marginal distribution, e
 
 * [`UniformMarginal`](@ref)
 * [`NormalMarginal`](@ref)
+* [`BetaMarginal`](@ref)
 * [`PercentileMarginal`](@ref)
 * [`BoundedMarginal`](@ref)
 * [`UnboundedMarginal`](@ref)
@@ -16,6 +17,8 @@ All of these handle scalar `Float` or `Integer` draws, which constitute the majo
 
 Each marginal comes with a [`validate_draws`](@ref) function that validates that endowment draws are valid for this marginal.
 
+Bounded marginals define [`lb`](@ref) and [`ub`](@ref). Where known, quantiles can be looked up with [`marginal_quantile`](@ref).
+
 
 ```@docs
 EndowmentDraws
@@ -23,9 +26,13 @@ Endowment
 AbstractMarginal
 UniformMarginal
 NormalMarginal
+BetaMarginal
 PercentileMarginal
 UnboundedMarginal
 validate_draws
+lb
+ub
+marginal_quantile
 ```
 
 ## Typical Flow

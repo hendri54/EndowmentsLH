@@ -1,3 +1,5 @@
+include("beta_marginal.jl")
+
 ## -----------  Generic
 
 isbounded(u :: AbstractMarginal{T1}) where T1 = true;
@@ -12,6 +14,18 @@ function Base.show(io :: IO, u :: AbstractMarginal{T1}) where T1
         print(io,  " with bounds ",  round.([lb(u), ub(u)], digits = 2));
     end
 end
+
+
+"""
+	$(SIGNATURES)
+
+Quantiles for a marginal distribution. Inputs are percentiles in [0, 1].
+Not defined for all distributions. Fallback returns nothing.
+"""
+function marginal_quantile(u :: AbstractMarginal{T1}, pct) where T1
+    return nothing
+end
+
 
 """
 	$(SIGNATURES)
@@ -46,8 +60,13 @@ end
 draw_test_endowments(m :: UniformMarginal{T1}, n, rng :: AbstractRNG) where T1 =
     lb(m) .+ (ub(m) - lb(m)) .* rand(rng, T1, n);
 
-validate_draws(u :: UniformMarginal{T1}, x :: Vector{T1})  where T1 =
+validate_draws(u :: UniformMarginal{T1}, x :: AbstractVector{T1})  where T1 =
     validate_bounded_draws(u, x);
+
+function marginal_quantile(u :: UniformMarginal{T1}, pct) where T1
+    return lb(u) .+ (ub(u) .- lb(u)) .* pct;
+end
+    
 
 
 ## ----------  Normal
@@ -67,6 +86,11 @@ draw_test_endowments(nm :: NormalMarginal{T1}, n, rng :: AbstractRNG) where T1 =
 validate_draws(nm :: NormalMarginal{T1}, x :: Vector{T1}) where T1 =
     validate_unbounded_draws(nm, x);
 
+function marginal_quantile(u :: NormalMarginal{T1}, pct) where T1
+    return quantile.(Distributions.Normal(u.mean, u.std), pct)
+end
+    
+
 ## -----------  Percentile
 
 lb(u :: PercentileMarginal{T1}) where T1  =  zero(T1);
@@ -78,6 +102,8 @@ draw_test_endowments(m :: PercentileMarginal{T1}, n, rng :: AbstractRNG) where T
 validate_draws(u :: PercentileMarginal{T1}, x) where T1 = 
     validate_bounded_draws(u, x);
 
+marginal_quantile(m :: PercentileMarginal{T1}, pct) where T1 = pct;
+
 
 ## -----------  Bounded
 
@@ -86,6 +112,7 @@ draw_test_endowments(m :: BoundedMarginal{T1}, n, rng :: AbstractRNG) where T1 =
 
 validate_draws(u :: BoundedMarginal{T1}, x) where T1 = 
     validate_bounded_draws(u, x);
+
 
 
 ## -----------  Unbounded

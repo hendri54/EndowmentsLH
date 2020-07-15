@@ -1,7 +1,7 @@
 module EndowmentsLH
 
 using ArgCheck, DocStringExtensions, Random
-using DataFrames
+using DataFrames, Distributions
 using CommonLH
 
 include("types.jl");
@@ -10,9 +10,9 @@ include("endowment.jl")
 include("endowment_draws.jl")
 
 # Endowment
-export AbstractMarginal, UniformMarginal, NormalMarginal, BoundedMarginal, UnboundedMarginal, PercentileMarginal, UnknownMarginal
+export AbstractMarginal, UniformMarginal, NormalMarginal, BetaMarginal, BoundedMarginal, UnboundedMarginal, PercentileMarginal, UnknownMarginal
 export Endowment
-export label, name, marginal, validate_draws
+export label, name, isbounded, lb, ub, marginal, marginal_quantile, validate_draws
 
 # EndowmentDraws
 export EndowmentDraws

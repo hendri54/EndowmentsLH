@@ -24,6 +24,18 @@ function endowment_test()
             @test isa(name(e), Symbol);
             x = EndowmentsLH.draw_test_endowments(e, n, rng);
             @test validate_draws(e, x)
+
+            # Quantiles
+            pctV = collect(0.0 : 0.2 : 1.0);
+            quantileV = marginal_quantile(m, pctV);
+            if !isnothing(quantileV)
+                @test size(pctV) == size(quantileV)
+                @test all(diff(quantileV) .>= 0.0)
+                if isbounded(m)
+                    @test isapprox(quantileV[1], lb(m))
+                    @test isapprox(quantileV[end], ub(m))
+                end
+            end
         end
     end
 end
