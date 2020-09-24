@@ -1,5 +1,5 @@
 using EndowmentsLH
-using Random, Test
+using Random, Statistics, Test
 
 
 # function marginals_test()
@@ -97,6 +97,34 @@ function endowment_draws_test()
     end
 end
 
+
+function endowment_corr_test()
+    rng = MersenneTwister(45);
+    @testset "Correlation matrix" begin
+        n = 15;
+        ed = EndowmentsLH.make_test_endowment_draws(n);
+        nameV = names(ed);
+        nVars = length(nameV);
+        corrM = corr_matrix(ed, nameV);
+        @test size(corrM) == (nVars, nVars)
+        fcM = formatted_corr_matrix(ed, nameV);
+        @test size(fcM) == (nVars + 1, nVars + 1)
+        for j = 1 : nVars
+            @test fcM[j+1, j+1] == "1.0"
+        end
+
+        @test isapprox(corrM[1, 3],  
+            cor(get_draws(ed, nameV[1]), get_draws(ed, nameV[3])))
+
+        corr3M = corr_matrix(ed);
+        @test isapprox(corrM, corr3M; nans = true)
+
+        corr2M = corr_matrix(ed, nameV[[1,3,5]]);
+        @test isapprox(corr2M[1,2],  corrM[1,3])
+        @test isapprox(corr2M[1,3],  corrM[1,5])
+    end
+end
+
 ## -----------  Custom endowment type, non-scalar values
 
 # This is the custom type to be drawn.
@@ -146,6 +174,7 @@ end
 @testset "All" begin
     endowment_test()
     endowment_draws_test()
+    endowment_corr_test()
     custom_type_test()
 end
 

@@ -33,6 +33,8 @@ validate_draws
 lb
 ub
 marginal_quantile
+corr_matrix
+formatted_corr_matrix
 ```
 
 ## Typical Flow
@@ -50,6 +52,7 @@ Endowment draws may be retrieved one endowment at a time using [`get_draws`](@re
 ```@docs
 add_draws!
 get_draws
+get_dataframe
 type_endowments
 ```
 

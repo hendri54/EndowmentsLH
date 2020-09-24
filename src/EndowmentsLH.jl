@@ -1,7 +1,7 @@
 module EndowmentsLH
 
 using ArgCheck, DocStringExtensions, Random
-using DataFrames, Distributions
+using DataFrames, Distributions, Statistics
 using CommonLH
 
 include("types.jl");
@@ -16,6 +16,6 @@ export label, name, isbounded, lb, ub, marginal, marginal_quantile, validate_dra
 
 # EndowmentDraws
 export EndowmentDraws
-export validate_draws, add_draws!, replace_draws!, select_rows, get_draws, get_label, get_meta, has_endowment, type_endowments
+export validate_draws, add_draws!, replace_draws!, select_rows, get_draws, get_label, get_meta, has_endowment, type_endowments, corr_matrix, formatted_corr_matrix
 
 end # module

@@ -30,6 +30,79 @@ function validate_draws(ed :: EndowmentDraws)
 end
 
 
+"""
+	$(SIGNATURES)
+
+Compute the correlation matrix of select endowments. Defaults to all endowments in the order determined by `names(ed)`.
+Note that not all endowments are scalar. Correlations are only computed for those that are. The others are set to NaN.
+"""
+function corr_matrix(ed :: EndowmentDraws, nameV :: Vector{Symbol} = names(ed))
+    n = length(nameV);
+    @assert n > 1
+    corrM = zeros(n, n);
+    for i1 = 1 : (n-1)
+        d1 = get_draws(ed, nameV[i1]);
+        corrM[i1, i1] = 1.0;
+        if isa(d1, Vector{<:Real})
+            for i2 = (i1+1) : n
+                d2 = get_draws(ed, nameV[i2]);
+                if isa(d2, Vector{<:Real})
+                    corrM[i1, i2] = cor(d1, d2);
+                else
+                    corrM[i1, i2] = NaN;
+                end
+            end
+        end
+    end
+    corrM[n, n] = 1.0;
+    return corrM
+end
+
+
+"""
+	$(SIGNATURES)
+
+Create formatted correlation matrix for selected endowments. Returns a string matrix with headers.
+"""
+function formatted_corr_matrix(ed :: EndowmentDraws, 
+    nameV :: Vector{Symbol} = names(ed))
+
+    corrM = corr_matrix(ed, nameV);
+    return formatted_corr_matrix(corrM, nameV);
+end
+
+
+"""
+	$(SIGNATURES)
+
+Create formatted correlation matrix from a numeric matrix and variable names. Correlation matrix may contain NaNs.
+"""
+function formatted_corr_matrix(corrM :: AbstractMatrix{F1}, nameV :: Vector{T2}) where {F1 <: Real, T2}
+
+    n = length(nameV);
+    @assert size(corrM) == (n, n)
+    
+    m = fill("", n+1, n+1);
+    for j = 1 : n
+        m[1, j+1] = string(nameV[j]);
+        m[j+1, 1] = string(nameV[j]);
+        m[j+1, j+1] = "1.0";
+    end
+    for j1 = 1 : (n-1)
+        for j2 = (j1 + 1) : n
+            c = corrM[j1, j2];
+            if isnan(c)
+                s = "--";
+            else
+                s = "$(round(c, digits = 2))";
+            end
+            m[j1+1, j2+1] = s;
+        end
+    end
+    return m
+end
+
+
 ## -------------  Access
 
 Base.show(io :: IO, ed :: EndowmentDraws) = 
@@ -115,6 +188,13 @@ Retrieve draws for one endowment; for all individuals.
 get_draws(e :: EndowmentDraws, eName) = e.draws[!, eName];
 
 get_draws(e :: EndowmentDraws, eName, idxV) = e.draws[idxV, eName];
+
+"""
+	$(SIGNATURES)
+
+Return DataFrame with all endowments. Useful for running regressions on endowments.
+"""
+get_dataframe(e :: EndowmentDraws) = e.draws;
 
 
 ## ---------  Modify
