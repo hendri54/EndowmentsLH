@@ -6,6 +6,7 @@ Base.show(io :: IO, e :: Endowment{T1}) where T1 =
 name(e :: Endowment{T1}) where T1  =  e.name;
 label(e :: Endowment{T1}) where T1  = e.label;
 marginal(e :: Endowment{T1}) where T1  =  e.marginal;
+Base.eltype(e :: Endowment{T1}) where T1 = T1;
 
 validate_draws(e :: Endowment{T1}, x :: Vector{T1}) where T1  =
     validate_draws(marginal(e), x);

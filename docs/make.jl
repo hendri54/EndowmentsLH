@@ -1,6 +1,6 @@
 Pkg.activate("./docs")
 
-using Documenter, EndowmentsLH
+using Documenter, EndowmentsLH, FilesLH
 
 makedocs(
     modules = [EndowmentsLH],

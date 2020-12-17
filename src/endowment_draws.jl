@@ -145,6 +145,8 @@ select_rows(e :: EndowmentDraws, idxV) = EndowmentDraws(e.meta, e.draws[idxV, :]
 # """
 # select_rows!(e :: EndowmentDraws, idxV) = (e.draws = e.draws[idxV, :]);
 
+Base.eltype(e :: EndowmentDraws, eName :: Symbol) = 
+    eltype(get_meta(e, eName));
 
 """
 	$(SIGNATURES)
@@ -197,6 +199,28 @@ Return DataFrame with all endowments. Useful for running regressions on endowmen
 get_dataframe(e :: EndowmentDraws) = e.draws;
 
 
+"""
+	$(SIGNATURES)
+
+Returns quantiles of one endowment from its draws. Returns the same `DataType` as the endowment itself (e.g. nearest Integer).
+
+Quantile = quantile from Statistics, rounded to the `eltype` of the endowment draw.
+
+Only for scalar, numeric endowments.
+"""
+function endow_quantiles(e :: EndowmentDraws, eName, pctV)
+    eType = eltype(e, eName);
+    @assert eType <: Real  "Only for scalar numeric endowments. $eName is of $eType"
+    qV = quantile(get_draws(e, eName), pctV);
+    if eType <: Integer
+        eqV = round.(eType, qV);
+    else
+        eqV = convert.(eType, qV);
+    end
+    return eqV
+end
+
+
 ## ---------  Modify
 
 """
@@ -227,7 +251,7 @@ function replace_draws!(e :: EndowmentDraws, eName :: Symbol, newVals :: T1) whe
             e.draws[j, eName] = newVals;
         end
     elseif eltype(newVals) == oldType
-        # Inputs is a vector. One draw for each old draw.
+        # Input is a vector. One draw for each old draw.
         @assert length(newVals) == length(e)    
         e.draws[!, eName] .= newVals;
     else
@@ -239,6 +263,53 @@ function replace_draws!(e :: EndowmentDraws, eName :: Symbol, newVals :: T1) whe
 end
 
 
+# """
+# 	$(SIGNATURES)
+
+# Replace endowments with their quantiles.
+# """
+# function replace_with_quantiles!(e :: EndowmentDraws, eNames, 
+#     pctV :: AbstractVector{F1}) where F1 <: AbstractFloat
+
+#     @assert length(pctV) == length(e)  "Need one percentile for each observation";
+#     for eName in eNames
+#         replace_draws!(e, eName, endow_quantiles(e, eName, pctV));
+#     end
+# end
+
+
+"""
+	$(SIGNATURES)
+
+Return `n` endowment draws where all numeric endowments are set to the same quantile in their distributions. Non-scalar endowments are set arbitrarily (because they don't have well-defined quantiles).
+
+# Arguments
+- `addNoise`: scale for additive noise. If not `nothing`, create a Vector in (0, addNoise) and add it to the draws. The purpose is to leave some variation in the draws for cases where identical draws cause numerical issues.
+"""
+function draw_fixed_percentiles(e :: EndowmentDraws, n :: Integer, pct :: F1;
+    addNoise :: F2 = 0.0) where {F1 <: AbstractFloat, F2 <: AbstractFloat}
+
+    draws = select_rows(e, 1 : n);
+    for eName in names(e)
+        eType = eltype(e, eName);
+        if eType <: Real
+            q = endow_quantiles(e, eName, pct);
+            replace_draws!(draws, eName, q .+ gen_noise(eType, addNoise, n));
+        end
+    end
+    return draws
+end
+
+function gen_noise(F1 :: Type{<:AbstractFloat}, addNoise, n :: Integer)
+    if addNoise > zero(F1)
+        nV = F1(addNoise) .* rand(F1, n);
+    else
+        nV = zero(F1);
+    end
+end
+
+# For Integers, cannot add noise
+gen_noise(I1 :: Type{<:Integer}, addNoise, n :: Integer) = zero(I1);
 
 
 # -------  For testing

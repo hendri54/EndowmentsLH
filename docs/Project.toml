@@ -1,5 +1,7 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+EndowmentsLH = "43a91d11-2366-4444-9ac6-7eb6ace4fe3c"
+FilesLH = "69233b93-b644-4f5d-9b2e-8880c8b19068"
 
 [compat]
 Documenter = "~0.24"

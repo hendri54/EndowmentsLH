@@ -24,6 +24,7 @@ function endowment_test()
             @test isa(name(e), Symbol);
             x = EndowmentsLH.draw_test_endowments(e, n, rng);
             @test validate_draws(e, x)
+            @test eltype(x) == eltype(e)
 
             # Quantiles
             pctV = collect(0.0 : 0.2 : 1.0);
@@ -52,7 +53,7 @@ function endowment_draws_test()
         @test isnothing(names(ed))
         @test isnothing(get_meta(ed, :test))
 
-        n = 5;
+        n = 50;
         ed = EndowmentsLH.make_test_endowment_draws(n);
         @test validate_draws(ed)
         @test length(ed) == n
@@ -73,6 +74,18 @@ function endowment_draws_test()
             draw23V = get_draws(ed, dName, 2:3);
             @test draw23V == drawV[2:3]
 
+            # if eltype(drawV) <: Real
+            #     qV = endow_quantiles(ed, dName, [0.3, 0.7]);
+            #     @test eltype(qV) == eltype(drawV)
+            #     @test size(qV) == (2,)
+            #     @test all(diff(qV) .> 0.0)
+
+            #     q = endow_quantiles(ed, dName, 0.7);
+            #     @test isapprox(qV[2], q)
+            #     nLess = sum(get_draws(ed, dName) .<= q);
+            #     @test abs(nLess / n - 0.7) < 1.5 / n
+            # end
+            
             newDrawV = EndowmentsLH.draw_test_endowments(endow, length(ed), rng);
             replace_draws!(ed, dName, newDrawV);
             @test get_draws(ed, dName) == newDrawV
@@ -176,6 +189,8 @@ end
     endowment_draws_test()
     endowment_corr_test()
     custom_type_test()
+    include("fixed_percentiles.jl");
+    include("quantile_test.jl");
 end
 
 # -----------
