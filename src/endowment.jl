@@ -17,6 +17,7 @@ validate_draws(e :: Endowment{T1}, x :: Vector{T1}) where T1  =
 
 function make_test_endowment_vector()
     return [Endowment(:normal, "Normal", NormalMarginal(2.0, 1.5)),
+        Endowment(:lognormal, "LogNormal", LogNormalMarginal(1.0, 2.0, 0.8)),
         Endowment(:uniform, "Uniform", UniformMarginal(-1.5, 0.5)),
         Endowment(:percentile, "Percentile", PercentileMarginal{Float32}()),
         Endowment(:bounded,  "Bounded", BoundedMarginal(3.0, 4.0)),

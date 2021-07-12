@@ -54,6 +54,7 @@ add_draws!
 get_draws
 get_dataframe
 type_endowments
+replace_draws!
 ```
 
 --------------

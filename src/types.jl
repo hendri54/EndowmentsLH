@@ -12,14 +12,14 @@ abstract type AbstractMarginal{T1} end
 
 Marginal distribution that is Uniform[0, 1].
 """
-struct PercentileMarginal{T1 <: AbstractFloat} <: AbstractMarginal{T1} end
+struct PercentileMarginal{T1 <: Real} <: AbstractMarginal{T1} end
 
 """
 	$(SIGNATURES)
 
 Uniform marginal distribution over fixed bounds.
 """
-struct UniformMarginal{T1 <: AbstractFloat} <: AbstractMarginal{T1}
+struct UniformMarginal{T1 <: Real} <: AbstractMarginal{T1}
 	lb :: T1
 	ub :: T1
 end
@@ -29,7 +29,19 @@ end
 
 Normal(mean, std) marginal. Should store the Normal object +++
 """
-struct NormalMarginal{T1 <: AbstractFloat} <: AbstractMarginal{T1}
+struct NormalMarginal{T1 <: Real} <: AbstractMarginal{T1}
+	mean :: T1
+	std :: T1
+end
+
+
+"""
+	$(SIGNATURES)
+
+LogNormal(mean, std) marginal with offset `lb`. Should store the Normal object +++
+"""
+struct LogNormalMarginal{T1 <: Real} <: AbstractMarginal{T1}
+	lb :: T1
 	mean :: T1
 	std :: T1
 end

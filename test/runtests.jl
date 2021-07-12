@@ -7,35 +7,36 @@ using Random, Statistics, Test
 # 	end
 # end
 
-function endowment_test()
-    @testset "Endowment and Marginals" begin
+function endowment_test(e)
+    @testset "Endowment $e" begin
         rng = MersenneTwister(43);
-        n = 11;
-        ev = EndowmentsLH.make_test_endowment_vector();
-        for e in ev
-            m = marginal(e);
-            println(m);
-            @test isa(m, AbstractMarginal);
-            if EndowmentsLH.isbounded(m)
-                @test all(EndowmentsLH.ub(m) .> EndowmentsLH.lb(m))
-            end
+        n = 50_000;
+        m = marginal(e);
+        # println(m);
+        @test isa(m, AbstractMarginal);
+        if EndowmentsLH.isbounded(m)
+            @test all(EndowmentsLH.ub(m) .> EndowmentsLH.lb(m))
+        end
 
-            println(e);
-            @test isa(name(e), Symbol);
-            x = EndowmentsLH.draw_test_endowments(e, n, rng);
-            @test validate_draws(e, x)
-            @test eltype(x) == eltype(e)
+        # println(e);
+        @test isa(name(e), Symbol);
+        x = EndowmentsLH.draw_test_endowments(e, n, rng);
+        @test validate_draws(e, x)
+        @test eltype(x) == eltype(e);
+        if applicable(EndowmentsLH.mean, m)
+            @test isapprox(Statistics.mean(x), EndowmentsLH.mean(m), atol = 0.1);
+            @test isapprox(Statistics.std(x), EndowmentsLH.std(m), atol = 0.1);
+        end
 
-            # Quantiles
-            pctV = collect(0.0 : 0.2 : 1.0);
-            quantileV = marginal_quantile(m, pctV);
-            if !isnothing(quantileV)
-                @test size(pctV) == size(quantileV)
-                @test all(diff(quantileV) .>= 0.0)
-                if isbounded(m)
-                    @test isapprox(quantileV[1], lb(m))
-                    @test isapprox(quantileV[end], ub(m))
-                end
+        # Quantiles
+        pctV = collect(0.0 : 0.2 : 1.0);
+        quantileV = marginal_quantile(m, pctV);
+        if !isnothing(quantileV)
+            @test size(pctV) == size(quantileV)
+            @test all(diff(quantileV) .>= 0.0)
+            if isbounded(m)
+                @test isapprox(quantileV[1], lb(m))
+                @test isapprox(quantileV[end], ub(m))
             end
         end
     end
@@ -185,7 +186,10 @@ end
 
 
 @testset "All" begin
-    endowment_test()
+    ev = EndowmentsLH.make_test_endowment_vector();
+    for e in ev
+        endowment_test(e)
+    end
     endowment_draws_test()
     endowment_corr_test()
     custom_type_test()

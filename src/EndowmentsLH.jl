@@ -5,12 +5,12 @@ using DataFrames, Distributions, Statistics
 using CommonLH
 
 include("types.jl");
-include("marginals.jl")
+include("marginals.jl");
 include("endowment.jl")
 include("endowment_draws.jl")
 
 # Endowment
-export AbstractMarginal, UniformMarginal, NormalMarginal, BetaMarginal, BoundedMarginal, UnboundedMarginal, PercentileMarginal, UnknownMarginal
+export AbstractMarginal, UniformMarginal, LogNormalMarginal, NormalMarginal, BetaMarginal, BoundedMarginal, UnboundedMarginal, PercentileMarginal, UnknownMarginal
 export Endowment
 export label, name, isbounded, lb, ub, marginal, marginal_quantile, validate_draws
 

@@ -67,6 +67,9 @@ function marginal_quantile(u :: UniformMarginal{T1}, pct) where T1
     return lb(u) .+ (ub(u) .- lb(u)) .* pct;
 end
     
+mean(m :: UniformMarginal{T1}) where T1 = (ub(m) + lb(m)) / T1(2);
+var(m :: UniformMarginal{T1}) where T1 = ((ub(m) - lb(m)) ^ T1(2)) / T1(12);
+std(m :: UniformMarginal{T1}) where T1 = sqrt(var(m));
 
 
 ## ----------  Normal
@@ -91,10 +94,42 @@ function marginal_quantile(u :: NormalMarginal{T1}, pct) where T1
 end
     
 
+## ----------  LogNormal
+
+Base.show(io :: IO, u :: LogNormalMarginal{T1}) where T1 =
+    print(io, typeof(u), 
+        " with mean ",  round(mean(u), digits = 2),
+        " and std ",  round(std(u), digits = 2));
+
+# https://en.wikipedia.org/wiki/Log-normal_distribution
+mean(n :: LogNormalMarginal{T1}) where T1  =  
+    n.lb + exp(n.mean + T1(0.5) * (n.std) ^ T1(2));
+var(n :: LogNormalMarginal{T1}) where T1  =  
+    exp(T1(2) * n.mean + n.std ^ 2) * (exp(n.std ^ 2) - one(T1));
+std(n :: LogNormalMarginal{T1}) where T1 = sqrt(var(n));
+isbounded(u :: LogNormalMarginal{T1}) where T1 = false;
+
+draw_test_endowments(nm :: LogNormalMarginal{T1}, n, rng :: AbstractRNG) where T1 =
+    # Do not use mean(nm) and std(nm). They mean something different.
+    nm.lb .+ exp.(nm.mean .+ nm.std .* randn(rng, T1, n));
+
+validate_draws(nm :: LogNormalMarginal{T1}, x :: Vector{T1}) where T1 =
+    validate_unbounded_draws(nm, x);
+
+function marginal_quantile(u :: LogNormalMarginal{T1}, pct) where T1
+    return u.lb .+ exp.(quantile.(Distributions.Normal(u.mean, u.std), pct))
+end
+    
+
 ## -----------  Percentile
 
 lb(u :: PercentileMarginal{T1}) where T1  =  zero(T1);
 ub(u :: PercentileMarginal{T1}) where T1  =  one(T1);
+
+# Same as uniform
+mean(m :: PercentileMarginal{T1}) where T1 = (ub(m) + lb(m)) / T1(2);
+var(m :: PercentileMarginal{T1}) where T1 = ((ub(m) - lb(m)) ^ T1(2)) / T1(12);
+std(m :: PercentileMarginal{T1}) where T1 = sqrt(var(m));
 
 draw_test_endowments(m :: PercentileMarginal{T1}, n, rng :: AbstractRNG) where T1 =
     rand(rng, T1, n);
